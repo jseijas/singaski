@@ -93,6 +93,7 @@ var SkiMap = Class.extend(function() {
     this.calculateRoute = function() {
         var potentialStartNodes = [];
         // Go all over the matrix connecting nodes
+        var currentDepth = 1;
         for (var x = 0; x < this.getWidth(); x++) {
             for (var y = 0; y < this.getHeight(); y++) {
                 var node = matrix.get(x,y);
@@ -108,8 +109,8 @@ var SkiMap = Class.extend(function() {
                     }
                 }
                 if (node.isTail()) {
+                    node.depth = currentDepth;
                     node.marked = true;
-                    node.setParentTails();
                 } else {
                     potentialStartNodes.push(node);
                 }
@@ -117,14 +118,15 @@ var SkiMap = Class.extend(function() {
         }
         console.log('Potential start nodes: '+potentialStartNodes.length);
         while (potentialStartNodes.length > 0) {
+            currentDepth++;
             var oldPotentialStartNodes = potentialStartNodes;
             potentialStartNodes = [];
             var tailNodes = [];
             for (var i = 0; i < oldPotentialStartNodes.length; i++) {
                 var node = oldPotentialStartNodes[i];
                 if (node.allSonsMarked()) {
+                    node.depth = currentDepth;
                     tailNodes.push(node);
-                    node.setParentTails();
                 } else {
                     node.cleanMarkedSons();
                     potentialStartNodes.push(node);
@@ -157,7 +159,7 @@ var SkiNode = function(altitude) {
     this.sons = [];
     this.parents = [];
     this.marked = false;
-    this.tail = null;
+    this.depth = 0;
 
     /*
      * Connect this node to another one, being the target the son
@@ -216,40 +218,37 @@ var SkiNode = function(altitude) {
     }
 
     /*
-     * Set the tail property of all the parents.
-     */
-    this.setParentTails = function() {
-        for (var i = 0; i < this.parents.length; i++) {
-            this.parents[i].setTail(this.tail === null ? this : this.tail);
-        }
-    }
-
-    /*
-     * Set the tail property taking into account that altitude must be minimum to get bigger altitude delta.
-     *
-     * @param {SkiNode} New tail node.
-     */
-    this.setTail = function(tail) {
-        if (this.tail === null) {
-            this.tail = tail;
-        } else {
-            if (this.tail.altitude > tail.altitude) {
-                this.tail = tail;
-            }
-        }
-    }
-
-    /*
      * Gets the altitude delta between this node and its tail.
      *
      * @return {number} Altitude delta between this node and its tail.
      */
     this.getTailDistance = function() {
-        if (this.tail === null) {
-            return 0;
-        } else {
-            return this.altitude - this.tail.altitude;
+        var route = this.getRoute();
+        return route[0].altitude - route[route.length-1].altitude;
+    }
+
+
+    this.getBestSon = function() {
+        var bestDepth = this.sons[0].depth;
+        for (var i = 1; i < this.sons.length; i++) {
+            var sonDepth = this.sons[i].depth;
+            if (sonDepth > bestDepth) {
+                bestDepth = sonDepth;
+            }
         }
+        var bestSon = null;
+        for (var i = 0; i < this.sons.length; i++) {
+            if (this.sons[i].depth === bestDepth) {
+                if (bestSon === null) {
+                    bestSon = this.sons[i];
+                } else {
+                    if (this.sons[i].altitude < bestSon.altitude) {
+                        bestSon = this.sons[i];
+                    }
+                }
+            }
+        }
+        return bestSon;
     }
 
     /*
@@ -258,14 +257,14 @@ var SkiNode = function(altitude) {
      * @param {SkiNode} Node to be shown as a route.
      */
     this.getRoute = function() {
+        var result = [];
         var node = this;
-        var s = node.altitude;
+        result.push(node);
         while (node.sons.length > 0) {
-            node = node.sons[0];
-            s = s+" - "+node.altitude;
+            node = node.getBestSon();
+            result.push(node);
         }
-        return s;
+        return result;
     }
-
 }
 

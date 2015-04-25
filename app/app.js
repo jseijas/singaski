@@ -9,7 +9,12 @@ angular.module('skiapp', [])
             var map = new SkiMap();
             map.loadFrom(data);
             var winner = map.calculateRoute();
-            $scope.result = winner.getRoute()+' altitude delta = '+winner.getTailDistance();
+            var route = winner.getRoute();
+            var s = route[0].altitude;
+            for (var i = 1; i < route.length; i++) {
+                s = s+" - "+route[i].altitude;
+            }
+            $scope.result = s+' altitude delta = '+winner.getTailDistance();
         });
     }
 
