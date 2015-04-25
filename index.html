@@ -1,0 +1,32 @@
+<html ng-app='skiapp'>
+<head>  
+  <title>Skiing in Singapore - a coding diversion</title>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <meta charset='utf-8'>
+  <meta name='description' content=''>
+  <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'>
+    <link rel="stylesheet" href="libs/bootstrap/dist/css/bootstrap.min.css">
+</head>
+
+<body ng-controller='MainCtrl'>
+    <div class='container'>
+        <div class='jumbotron'>
+            Skiing in Singapore
+        </div>
+        <div class='container'>
+            <button type="button" class="btn btn-default" ng-click="doClick()">Click me!</button>
+            <br/>
+            <br/>
+            <label class="control-label">{{ result }}</label>
+        </div>
+    </div>
+  <script src='libs/jquery/dist/jquery.js'></script>
+  <script src='libs/angular/angular.js'></script>
+  <script src='libs/bootstrap/dist/js/bootstrap.js'></script>
+  <script src='app/common/classes/extend.js'></script>
+  <script src='app/common/classes/list.js'></script>
+  <script src='app/common/classes/matrix.js'></script>
+  <script src='app/skimap.js'></script>
+  <script src='app/app.js'></script>
+</body>
+</html>
